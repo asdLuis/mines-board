@@ -50,37 +50,6 @@ window.TimerEngine = (function () {
     }).filter(Boolean);
   }
 
-  // Add a custom mine from the UI.
-  function addMine(name, intervalMs, remainingMs) {
-    if (!Number.isFinite(intervalMs) || intervalMs <= 0) {
-      console.error(`Cannot add mine "${name}": invalid interval.`, intervalMs);
-      return null;
-    }
-
-    if (!Number.isFinite(remainingMs) || remainingMs < 0) {
-      console.error(`Cannot add mine "${name}": invalid remaining time.`, remainingMs);
-      return null;
-    }
-
-    const id = `custom-${counter++}`;
-    mines.push({
-      id,
-      name: name || 'Custom Mine',
-      intervalMs,
-      special: true,
-      visibleDefault: true,
-      starred: false,
-      nextReset: Date.now() + remainingMs
-    });
-
-    return id;
-  }
-
-  // Remove a mine.
-  function removeMine(id) {
-    mines = mines.filter(m => m.id !== id);
-  }
-
   // Reset a mine's timer starting from now.
   function resyncMineNow(id) {
     const mine = mines.find(m => m.id === id);
@@ -241,8 +210,6 @@ window.TimerEngine = (function () {
 
   return {
     init,
-    addMine,
-    removeMine,
     resyncMineNow,
     toggleStar,
     syncFromServerCountdown,

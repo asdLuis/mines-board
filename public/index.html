@@ -23,8 +23,7 @@
       <p>Mine and manual timer tracker</p>
 
       <div class="page-header-actions">
-        <button
-          class="icon-btn xp-open-btn"
+<button
           id="xpOpenBtn"
           title="Open XP calculator"
         >
@@ -49,7 +48,7 @@
 
           <div class="panel-head server-head">
             <h2>Server reset</h2>
-            <button class="icon-btn" id="calOpenBtn" title="Fix a delay">
+            <button id="calOpenBtn" title="Fix a delay">
               Fix a delay
             </button>
           </div>
@@ -116,6 +115,14 @@
 
           <div class="section-head">
             <h2>Active timers</h2>
+
+            <span class="legend">
+              <i class="dot dot-soon"></i>
+              under 30 min
+
+              <i class="dot dot-focus"></i>
+              under 10 min
+            </span>
           </div>
 
           <div
@@ -129,17 +136,7 @@
         <section class="mines-section">
 
           <div class="section-head">
-
             <h2>Mines</h2>
-
-            <span class="legend">
-              <i class="dot dot-soon"></i>
-              under 30 min
-
-              <i class="dot dot-focus"></i>
-              under 10 min
-            </span>
-
           </div>
 
           <div
@@ -153,17 +150,7 @@
         <section class="mines-section">
 
           <div class="section-head">
-
             <h2>Special mines</h2>
-
-            <span class="legend">
-              <i class="dot dot-soon"></i>
-              under 30 min
-
-              <i class="dot dot-focus"></i>
-              under 10 min
-            </span>
-
           </div>
 
           <div
@@ -172,89 +159,6 @@
           ></div>
 
         </section>
-
-        <!-- Add one-off mine -->
-        <details class="add-card">
-
-          <summary>
-            Add a one-off mine
-          </summary>
-
-          <div class="add-form">
-
-            <input
-              type="text"
-              id="mName"
-              placeholder="Name"
-            >
-
-            <span class="group-label">
-              interval
-            </span>
-
-            <input
-              type="number"
-              id="mIntH"
-              min="0"
-              value="0"
-              aria-label="hours"
-            >
-
-            <input
-              type="number"
-              id="mIntM"
-              min="0"
-              max="59"
-              value="30"
-              aria-label="minutes"
-            >
-
-            <input
-              type="number"
-              id="mIntS"
-              min="0"
-              max="59"
-              value="0"
-              aria-label="seconds"
-            >
-
-            <span class="group-label">
-              left now
-            </span>
-
-            <input
-              type="number"
-              id="mRemH"
-              min="0"
-              value="0"
-              aria-label="hours"
-            >
-
-            <input
-              type="number"
-              id="mRemM"
-              min="0"
-              max="59"
-              value="30"
-              aria-label="minutes"
-            >
-
-            <input
-              type="number"
-              id="mRemS"
-              min="0"
-              max="59"
-              value="0"
-              aria-label="seconds"
-            >
-
-            <button id="mAddBtn">
-              Add
-            </button>
-
-          </div>
-
-        </details>
 
         </main>
 
@@ -321,7 +225,6 @@
     <aside class="sidebar" id="sidebar">
 
       <div class="sidebar-head">
-        <span>Visible items</span>
 
         <button
           class="icon-btn"
@@ -401,13 +304,13 @@
           </p>
         </div>
 
-        <p class="xp-formula">
-          ladder · to level n: n²+6n / 2.5n²−40.5n+360 / 4.5n²−162.5n+2220
-        </p>
-
       </div>
 
     </aside>
+
+    <footer class="site-footer" data-od-id="site-footer">
+      Made by <b>zLuis</b> · <a href="https://zluis.site" target="_blank" rel="noopener">zluis.site</a>
+    </footer>
 
   </div>
 

@@ -27,14 +27,6 @@ window.UI = (function () {
 
       mineGrid: document.getElementById('mineGrid'),
       specialGrid: document.getElementById('specialGrid'),
-      mName: document.getElementById('mName'),
-      mIntH: document.getElementById('mIntH'),
-      mIntM: document.getElementById('mIntM'),
-      mIntS: document.getElementById('mIntS'),
-      mRemH: document.getElementById('mRemH'),
-      mRemM: document.getElementById('mRemM'),
-      mRemS: document.getElementById('mRemS'),
-      mAddBtn: document.getElementById('mAddBtn'),
 
       calModal: document.getElementById('calModal'),
       calBackdrop: document.getElementById('calBackdrop'),
@@ -58,9 +50,7 @@ window.UI = (function () {
       sidebarCloseBtn: document.getElementById('sidebarCloseBtn'),
       chkStandard: document.getElementById('chkStandard'),
       chkSpecial: document.getElementById('chkSpecial'),
-      chkTimers: document.getElementById('chkTimers'),
-
-      layout: document.getElementById('layout')
+      chkTimers: document.getElementById('chkTimers')
     };
   }
 
@@ -173,12 +163,6 @@ window.UI = (function () {
       }
 
       const id = btn.dataset.id;
-
-      if (btn.dataset.action === 'remove') {
-        Engine.removeMine(id);
-        renderSidebar();
-        renderCalibrationOptions();
-      }
 
       if (btn.dataset.action === 'star') {
         Engine.toggleStar(id);
@@ -354,39 +338,6 @@ window.UI = (function () {
       }
     });
 
-    els.mAddBtn.addEventListener('click', () => {
-      const name =
-        els.mName.value.trim() || 'New mine';
-
-      const intervalMs = toMs({
-        hours: parseInt(els.mIntH.value) || 0,
-        minutes: parseInt(els.mIntM.value) || 0,
-        seconds: parseInt(els.mIntS.value) || 0
-      });
-
-      if (intervalMs <= 0) {
-        return;
-      }
-
-      const remainingMs = toMs({
-        hours: parseInt(els.mRemH.value) || 0,
-        minutes: parseInt(els.mRemM.value) || 0,
-        seconds: parseInt(els.mRemS.value) || 0
-      });
-
-      Engine.addMine(
-        name,
-        intervalMs,
-        remainingMs
-      );
-
-      els.mName.value = '';
-
-      renderSidebar();
-      renderCalibrationOptions();
-      render();
-    });
-
     bindMineGridEvents(els.mineGrid);
     bindMineGridEvents(els.specialGrid);
 
@@ -470,7 +421,7 @@ window.UI = (function () {
 
       const predictHtml =
         (predictions && predictions.length)
-          ? `<div class="predict-count">${predictions.length} left</div>`
+          ? `<div class="predict-count">${predictions.length} left before global reset</div>`
           : `<div class="predict-count muted">—</div>`;
 
       return `
@@ -515,16 +466,6 @@ window.UI = (function () {
 
           ${predictHtml}
 
-          <div class="spacer"></div>
-
-          <div class="row-actions">
-            <button
-              class="link"
-              data-action="remove"
-              data-id="${mine.id}"
-            >×</button>
-          </div>
-
         </div>
       `;
     }).join('');
@@ -562,6 +503,8 @@ window.UI = (function () {
   function renderManualTimers() {
     const { presets, running } =
       Manual.getState();
+
+    const { server } = Engine.getState();
 
     const visiblePresets =
       presets.filter(p =>
@@ -610,10 +553,19 @@ window.UI = (function () {
           const remaining =
             r.endsAt - Date.now();
 
+          const stateClass =
+            !r.finished && remaining > 0
+              ? (remaining <= server.focusMs
+                  ? 'focus'
+                  : remaining <= server.soonMs
+                    ? 'soon'
+                    : '')
+              : '';
+
           return `
             <div class="manual-row ${
               r.finished ? 'done' : ''
-            }">
+            }${stateClass ? ' ' + stateClass : ''}">
 
               <span>
                 ${escapeHtml(r.name)}

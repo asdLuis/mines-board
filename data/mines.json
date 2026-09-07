@@ -219,8 +219,8 @@
       "id": "mina-v",
       "name": "Mina V",
       "interval": {
-        "hours": 1,
-        "minutes": 0,
+        "hours": 2,
+        "minutes": 30,
         "seconds": 0
       },
       "visible": false
