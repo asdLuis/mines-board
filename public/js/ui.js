@@ -24,6 +24,7 @@ window.UI = (function () {
       calNote: document.getElementById('calNote'),
 
       mineGrid: document.getElementById('mineGrid'),
+      specialGrid: document.getElementById('specialGrid'),
       mName: document.getElementById('mName'),
       mIntH: document.getElementById('mIntH'),
       mIntM: document.getElementById('mIntM'),
@@ -33,20 +34,23 @@ window.UI = (function () {
       mRemS: document.getElementById('mRemS'),
       mAddBtn: document.getElementById('mAddBtn'),
 
+      calModal: document.getElementById('calModal'),
+      calBackdrop: document.getElementById('calBackdrop'),
+      calOpenBtn: document.getElementById('calOpenBtn'),
+      calCloseBtn: document.getElementById('calCloseBtn'),
+
       presetGrid: document.getElementById('presetGrid'),
       manualGrid: document.getElementById('manualGrid'),
 
       sidebar: document.getElementById('sidebar'),
+      sidebarBackdrop: document.getElementById('sidebarBackdrop'),
       sidebarOpenBtn: document.getElementById('sidebarOpenBtn'),
       sidebarCloseBtn: document.getElementById('sidebarCloseBtn'),
       chkStandard: document.getElementById('chkStandard'),
       chkSpecial: document.getElementById('chkSpecial'),
       chkTimers: document.getElementById('chkTimers'),
 
-      layout: document.getElementById('layout'),
-      nextUpName: document.getElementById('nextUpName'),
-      nextUpCount: document.getElementById('nextUpCount'),
-      nextUpSub: document.getElementById('nextUpSub')
+      layout: document.getElementById('layout')
     };
   }
 
@@ -95,9 +99,9 @@ window.UI = (function () {
 
   function applySidebarOpenState() {
     const open = Prefs.getSidebarOpen();
-    els.sidebar.classList.toggle('hidden', !open);
-    els.sidebarOpenBtn.classList.toggle('hidden', open);
-    els.layout.classList.toggle('collapsed', !open);
+    els.sidebar.classList.toggle('open', open);
+    els.sidebarBackdrop.classList.toggle('visible', open);
+    document.body.classList.toggle('no-scroll', open);
   }
 
   function bindSidebarEvents() {
@@ -108,6 +112,11 @@ window.UI = (function () {
 
     els.sidebarOpenBtn.addEventListener('click', () => {
       Prefs.setSidebarOpen(true);
+      applySidebarOpenState();
+    });
+
+    els.sidebarBackdrop.addEventListener('click', () => {
+      Prefs.setSidebarOpen(false);
       applySidebarOpenState();
     });
 
@@ -143,6 +152,39 @@ window.UI = (function () {
         `<option value="${m.id}">${escapeHtml(m.name)}</option>`
       )
       .join('');
+  }
+
+  function bindMineGridEvents(gridEl) {
+    gridEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+
+      if (!btn) {
+        return;
+      }
+
+      const id = btn.dataset.id;
+
+      if (btn.dataset.action === 'remove') {
+        Engine.removeMine(id);
+        renderSidebar();
+        renderCalibrationOptions();
+      }
+
+      if (btn.dataset.action === 'star') {
+        Engine.toggleStar(id);
+      }
+
+      render();
+    });
+  }
+
+  function setCalModal(open) {
+    els.calModal.classList.toggle('open', open);
+    els.calBackdrop.classList.toggle('visible', open);
+
+    if (open) {
+      renderCalibrationOptions();
+    }
   }
 
   function bindEvents(cycleHours) {
@@ -191,6 +233,10 @@ window.UI = (function () {
       render();
     });
 
+    els.calOpenBtn.addEventListener('click', () => setCalModal(true));
+    els.calCloseBtn.addEventListener('click', () => setCalModal(false));
+    els.calBackdrop.addEventListener('click', () => setCalModal(false));
+
     els.mAddBtn.addEventListener('click', () => {
       const name =
         els.mName.value.trim() || 'New mine';
@@ -224,27 +270,8 @@ window.UI = (function () {
       render();
     });
 
-    els.mineGrid.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action]');
-
-      if (!btn) {
-        return;
-      }
-
-      const id = btn.dataset.id;
-
-      if (btn.dataset.action === 'remove') {
-        Engine.removeMine(id);
-        renderSidebar();
-        renderCalibrationOptions();
-      }
-
-      if (btn.dataset.action === 'star') {
-        Engine.toggleStar(id);
-      }
-
-      render();
-    });
+    bindMineGridEvents(els.mineGrid);
+    bindMineGridEvents(els.specialGrid);
 
     els.presetGrid.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-preset]');
@@ -271,78 +298,6 @@ window.UI = (function () {
     bindSidebarEvents();
   }
 
-  // ---------- Hero: the single soonest thing coming up ----------
-  function renderNextUp() {
-    const { mines } = Engine.getState();
-    const { running } = Manual.getState();
-    const now = Date.now();
-
-    const candidates = [];
-
-    mines
-      .filter(m =>
-        Prefs.isMineVisible(
-          m.id,
-          m.visibleDefault
-        )
-      )
-      .forEach(m =>
-        candidates.push({
-          name: m.name,
-          endsAt: m.nextReset,
-          kind: 'mine'
-        })
-      );
-
-    running
-      .filter(r =>
-        !r.finished &&
-        Prefs.isTimerVisible(
-          r.presetId,
-          true
-        )
-      )
-      .forEach(r =>
-        candidates.push({
-          name: r.name,
-          endsAt: r.endsAt,
-          kind: 'timer'
-        })
-      );
-
-    if (candidates.length === 0) {
-      els.nextUpName.textContent =
-        'Nothing tracked yet';
-
-      els.nextUpCount.textContent =
-        '—';
-
-      els.nextUpSub.textContent =
-        'Sync the server or start a manual timer to see it here.';
-
-      return;
-    }
-
-    candidates.sort(
-      (a, b) => a.endsAt - b.endsAt
-    );
-
-    const next = candidates[0];
-
-    els.nextUpName.textContent =
-      next.name;
-
-    els.nextUpCount.textContent =
-      fmtDuration(next.endsAt - now);
-
-    els.nextUpSub.textContent =
-      `resets ${fmtClock(next.endsAt)}${
-        candidates.length > 1
-          ? ` · ${candidates.length - 1} more tracked`
-          : ''
-      }`;
-  }
-
   function renderServerPanel() {
     const { server } = Engine.getState();
 
@@ -367,27 +322,8 @@ window.UI = (function () {
     }
   }
 
-  function renderMines(flashed) {
-    const { mines, server } = Engine.getState();
-
-    const visible = mines.filter(m =>
-      Prefs.isMineVisible(
-        m.id,
-        m.visibleDefault
-      )
-    );
-
-    if (visible.length === 0) {
-      els.mineGrid.innerHTML =
-        '<div class="empty">Nothing visible — pick some mines in the sidebar.</div>';
-
-      return;
-    }
-
-    const now = Date.now();
-
-    // Starred mines first (they need attention), then soonest-to-reset.
-    const sorted = [...visible].sort((a, b) => {
+  function mineRows(mines, server, now, flashed) {
+    const sorted = [...mines].sort((a, b) => {
       if (a.starred !== b.starred) {
         return a.starred ? -1 : 1;
       }
@@ -398,81 +334,112 @@ window.UI = (function () {
       );
     });
 
-    els.mineGrid.innerHTML =
-      sorted.map(mine => {
+    return sorted.map(mine => {
 
-        const remaining =
-          mine.nextReset - now;
+      const remaining =
+        mine.nextReset - now;
 
-        const focus =
-          remaining > 0 &&
-          remaining <= server.focusMs;
+      const focus =
+        remaining > 0 &&
+        remaining <= server.focusMs;
 
-        const soon =
-          !focus &&
-          remaining > 0 &&
-          remaining <= server.soonMs;
+      const soon =
+        !focus &&
+        remaining > 0 &&
+        remaining <= server.soonMs;
 
-        const predictions =
-          Engine.predictedResets(mine);
+      const predictions =
+        Engine.predictedResets(mine);
 
-        const predictHtml =
-          (predictions && predictions.length)
-            ? `<div class="predict-count">${predictions.length} left</div>`
-            : `<div class="predict-count muted">—</div>`;
+      const predictHtml =
+        (predictions && predictions.length)
+          ? `<div class="predict-count">${predictions.length} left</div>`
+          : `<div class="predict-count muted">—</div>`;
 
-        return `
-          <div class="mine-row ${
-            flashed.has(mine.id)
-              ? 'flash'
+      return `
+        <div class="mine-row ${
+          flashed.has(mine.id)
+            ? 'flash'
+            : ''
+        } ${
+          focus
+            ? 'focus'
+            : soon
+              ? 'soon'
               : ''
-          } ${
-            focus
-              ? 'focus'
-              : soon
-                ? 'soon'
-                : ''
-          }">
+        } ${
+          mine.starred
+            ? 'starred'
+            : ''
+        }">
 
-            <button
-              class="star-btn ${mine.starred ? 'on' : ''}"
-              data-action="star"
-              data-id="${mine.id}"
-              title="${
-                mine.starred
-                  ? 'Clear reminder'
-                  : 'Mark a reminder'
-              }"
-            >★</button>
+          <button
+            class="star-btn ${mine.starred ? 'on' : ''}"
+            data-action="star"
+            data-id="${mine.id}"
+            title="${
+              mine.starred
+                ? 'Clear reminder'
+                : 'Mark a reminder'
+            }"
+          >★</button>
 
-            <div class="name">
-              ${escapeHtml(mine.name)}
-            </div>
-
-            <div class="interval">
-              ${fmtDuration(mine.intervalMs)}
-            </div>
-
-            <div class="count">
-              ${fmtDuration(remaining)}
-            </div>
-
-            ${predictHtml}
-
-            <div class="spacer"></div>
-
-            <div class="row-actions">
-              <button
-                class="link"
-                data-action="remove"
-                data-id="${mine.id}"
-              >×</button>
-            </div>
-
+          <div class="name">
+            ${escapeHtml(mine.name)}
           </div>
-        `;
-      })
-      .join('');
+
+          <div class="interval">
+            ${fmtDuration(mine.intervalMs)}
+          </div>
+
+          <div class="count">
+            ${fmtDuration(remaining)}
+          </div>
+
+          ${predictHtml}
+
+          <div class="spacer"></div>
+
+          <div class="row-actions">
+            <button
+              class="link"
+              data-action="remove"
+              data-id="${mine.id}"
+            >×</button>
+          </div>
+
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderMines(flashed) {
+    const { mines, server } = Engine.getState();
+    const now = Date.now();
+
+    const visible = mines.filter(m =>
+      Prefs.isMineVisible(
+        m.id,
+        m.visibleDefault
+      )
+    );
+
+    const standard = visible.filter(m => !m.special);
+    const special = visible.filter(m => m.special);
+
+    if (standard.length === 0) {
+      els.mineGrid.innerHTML =
+        '<div class="empty">Nothing visible — pick some mines in the sidebar.</div>';
+    } else {
+      els.mineGrid.innerHTML = mineRows(standard, server, now, flashed);
+    }
+
+    if (special.length === 0) {
+      els.specialGrid.innerHTML =
+        '<div class="empty">No special mines tracked.</div>';
+    } else {
+      els.specialGrid.innerHTML = mineRows(special, server, now, flashed);
+    }
   }
 
   function renderManualTimers() {
@@ -561,7 +528,6 @@ window.UI = (function () {
   }
 
   function render(tickInfo) {
-    renderNextUp();
     renderServerPanel();
 
     renderMines(

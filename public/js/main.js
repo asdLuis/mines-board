@@ -58,20 +58,6 @@
       mineConfig.serverResetHours || 12
     );
 
-
-    // Display server cycle information.
-    const cycleHours =
-      mineConfig.serverResetHours || 12;
-
-    document.getElementById('sCycleLabel').textContent =
-      `every ${cycleHours}h` +
-      (
-        mineConfig.postResetDelaySeconds
-          ? ` +${mineConfig.postResetDelaySeconds}s delay`
-          : ''
-      );
-
-
     // Timer used for the starred-mine reminder.
     let nagTimer = 0;
 

@@ -1,8 +1,8 @@
 {
   "timers": [
-    { "id": "Boss Battle Araña", "name": "Boss Battle Araña", "duration": { "hours": 1, "minutes": 0, "seconds": 0 }, "visible": false },
-    { "id": "Boss Battle Ejercito", "name": "Boss Battle Ejercito", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": false },
-    { "id": "Boss Battle Bosque", "name": "Boss Battle Bosque", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": false },
-    { "id": "Boss Battle Ahogado", "name": "Boss Battle Ahogado", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": false }
+    { "id": "Boss Battle Araña", "name": "Boss Battle Araña", "duration": { "hours": 1, "minutes": 0, "seconds": 0 }, "visible": true },
+    { "id": "Boss Battle Ejercito", "name": "Boss Battle Ejercito", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true },
+    { "id": "Boss Battle Bosque", "name": "Boss Battle Bosque", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true },
+    { "id": "Boss Battle Ahogado", "name": "Boss Battle Ahogado", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true }
   ]
 }
