@@ -1,20 +1,37 @@
 window.TimerEngine = (function () {
+  'use strict';
+
   const { toMs, mod } = window.TimeUtils;
+
+  const DEFAULT_CYCLE_HOURS = 12;
+  const DEFAULT_SOON_SECONDS = 1800;
+  const DEFAULT_FOCUS_SECONDS = 600;
+  const DEFAULT_NAG_SECONDS = 600;
+  const DEFAULT_SOON_MS = DEFAULT_SOON_SECONDS * 1000;
+  const DEFAULT_FOCUS_MS = DEFAULT_FOCUS_SECONDS * 1000;
+  const DEFAULT_NAG_MS = DEFAULT_NAG_SECONDS * 1000;
+  const MAX_PREDICTIONS = 200;
 
   let mines = [];
   let counter = 1;
 
   let server = {
-    cycleMs: toMs({ hours: 12 }),
+    cycleMs: toMs({ hours: DEFAULT_CYCLE_HOURS }),
     nextReset: null,
     active: false,
     delayMs: 0,
-    soonMs: 1800000,
-    focusMs: 600000,
-    nagMs: 600000
+    soonMs: DEFAULT_SOON_MS,
+    focusMs: DEFAULT_FOCUS_MS,
+    nagMs: DEFAULT_NAG_MS
   };
 
-  // Calculate how much time remains until the next mine reset.
+  /**
+   * @brief Computes the time remaining until the next reset.
+   * @param elapsedSinceEpoch The elapsed milliseconds since the epoch.
+   * @param intervalMs The mine interval in milliseconds.
+   * @param delayMs The post-reset delay in milliseconds.
+   * @return The remaining milliseconds, clamped to zero or above.
+   */
   function computeRemaining(elapsedSinceEpoch, intervalMs, delayMs) {
     if (!Number.isFinite(intervalMs) || intervalMs <= 0) return 0;
     const effective = elapsedSinceEpoch - delayMs;
@@ -22,13 +39,16 @@ window.TimerEngine = (function () {
     return intervalMs - mod(effective, intervalMs);
   }
 
-  // Initialize the timer engine from config.
+  /**
+   * @brief Initializes the timer engine from configuration.
+   * @param config The configuration object with server and mine settings.
+   */
   function init(config = {}) {
-    server.cycleMs = toMs({ hours: config.serverResetHours || 12 });
+    server.cycleMs = toMs({ hours: config.serverResetHours || DEFAULT_CYCLE_HOURS });
     server.delayMs = (config.postResetDelaySeconds || 0) * 1000;
-    server.soonMs = (config.soonReminderSeconds != null ? config.soonReminderSeconds : 1800) * 1000;
-    server.focusMs = (config.focusReminderSeconds != null ? config.focusReminderSeconds : 600) * 1000;
-    server.nagMs = (config.starNagThresholdSeconds != null ? config.starNagThresholdSeconds : 600) * 1000;
+    server.soonMs = (config.soonReminderSeconds != null ? config.soonReminderSeconds : DEFAULT_SOON_SECONDS) * 1000;
+    server.focusMs = (config.focusReminderSeconds != null ? config.focusReminderSeconds : DEFAULT_FOCUS_SECONDS) * 1000;
+    server.nagMs = (config.starNagThresholdSeconds != null ? config.starNagThresholdSeconds : DEFAULT_NAG_SECONDS) * 1000;
 
     mines = (config.mines || []).map(m => {
       const intervalMs = toMs(m.interval || {});
@@ -50,7 +70,10 @@ window.TimerEngine = (function () {
     }).filter(Boolean);
   }
 
-  // Reset a mine's timer starting from now.
+  /**
+   * @brief Resets a mine's timer starting from now.
+   * @param id The mine id.
+   */
   function resyncMineNow(id) {
     const mine = mines.find(m => m.id === id);
     if (!mine) return;
@@ -63,13 +86,19 @@ window.TimerEngine = (function () {
     mine.nextReset = Date.now() + mine.intervalMs;
   }
 
-  // Toggle the star/reminder state of a mine.
+  /**
+   * @brief Toggles the star reminder state of a mine.
+   * @param id The mine id.
+   */
   function toggleStar(id) {
     const mine = mines.find(m => m.id === id);
     if (mine) mine.starred = !mine.starred;
   }
 
-  // Synchronize all mines against the server countdown.
+  /**
+   * @brief Synchronizes all mines against the server countdown.
+   * @param remainingMs The time left until the server reset.
+   */
   function syncFromServerCountdown(remainingMs) {
     if (!Number.isFinite(remainingMs) || remainingMs < 0) {
       console.error('Invalid server countdown:', remainingMs);
@@ -96,7 +125,12 @@ window.TimerEngine = (function () {
     });
   }
 
-  // Calibrate the entire system from an actual mine countdown.
+  /**
+   * @brief Calibrates the whole system from an actual mine countdown.
+   * @param mineId The id of the measured mine.
+   * @param actualRemainingMs The measured time left on that mine.
+   * @return The applied drift in milliseconds, or null when invalid.
+   */
   function calibrateFromMine(mineId, actualRemainingMs) {
     const mine = mines.find(m => m.id === mineId);
     if (!mine) return null;
@@ -125,7 +159,10 @@ window.TimerEngine = (function () {
     return driftMs;
   }
 
-  // Advance timers.
+  /**
+   * @brief Advances the timer state to the current time.
+   * @return An object with the flashed mine ids and the server flash flag.
+   */
   function tick() {
     const now = Date.now();
     const flashed = new Set();
@@ -158,11 +195,8 @@ window.TimerEngine = (function () {
 
     let serverFlashed = false;
 
-    // Handle the server-wide reset.
     if (server.active && Number.isFinite(server.nextReset) && server.nextReset <= now) {
       const serverIntervalsPassed = Math.floor((now - server.nextReset) / server.cycleMs) + 1;
-      
-      // Calculate the exact time the reset theoretically happened to avoid drift
       const exactLastReset = server.nextReset + ((serverIntervalsPassed - 1) * server.cycleMs);
 
       mines.forEach(mine => {
@@ -180,7 +214,11 @@ window.TimerEngine = (function () {
     return { flashed, serverFlashed };
   }
 
-  // Calculate upcoming predicted resets for a mine.
+  /**
+   * @brief Calculates the upcoming predicted resets for a mine.
+   * @param mine The mine to predict for.
+   * @return An array of prediction timestamps.
+   */
   function predictedResets(mine) {
     if (!server.active || !mine || !Number.isFinite(mine.intervalMs) || mine.intervalMs <= 0) {
       return [];
@@ -194,7 +232,7 @@ window.TimerEngine = (function () {
     let t = mine.nextReset;
     let guard = 0;
 
-    while (t < server.nextReset && guard < 200) {
+    while (t < server.nextReset && guard < MAX_PREDICTIONS) {
       list.push(t);
       t += mine.intervalMs;
       guard++;
@@ -203,7 +241,10 @@ window.TimerEngine = (function () {
     return list;
   }
 
-  // Return the current timer state.
+  /**
+   * @brief Returns the current timer state.
+   * @return An object with the mines and server state.
+   */
   function getState() {
     return { mines, server };
   }

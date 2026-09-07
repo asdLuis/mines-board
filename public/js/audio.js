@@ -1,9 +1,12 @@
-// Tiny beep generator so alerts work with no audio assets and no server
-// round-trip. Browsers block audio until a user gesture happens on the page,
-// so call SoundFX.unlock() from any click/tap handler first.
 window.SoundFX = (function () {
+  'use strict';
+
   let ctx = null;
 
+  /**
+   * @brief Ensures the audio context exists and is running.
+   * @return The audio context, or null when unsupported.
+   */
   function ensureCtx() {
     if (!ctx) {
       const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -14,6 +17,13 @@ window.SoundFX = (function () {
     return ctx;
   }
 
+  /**
+   * @brief Plays a short sine beep through the audio context.
+   * @param freq The beep frequency in hertz.
+   * @param durationMs The beep duration in milliseconds.
+   * @param delayMs The delay before the beep in milliseconds.
+   * @param volume The peak gain between 0 and 1.
+   */
   function beep(freq, durationMs, delayMs, volume) {
     const c = ensureCtx();
     if (!c) return;
@@ -34,25 +44,32 @@ window.SoundFX = (function () {
     osc.stop(end + 0.02);
   }
 
-  // Timer finished: two-note chime.
+  /**
+   * @brief Plays the timer-finished chime.
+   */
   function playDone() {
     beep(880, 160, 0, 0.28);
     beep(660, 220, 190, 0.28);
   }
 
-  // 30-min-left style reminder: a single short, higher blip. (kept for
-  // compatibility, currently unused by the UI directly)
+  /**
+   * @brief Plays a short reminder blip.
+   */
   function playStar() {
     beep(1300, 140, 0, 0.22);
   }
 
-  // Repeats periodically while any mine is starred — a nagging "you left
-  // something" ping, distinct from the finish chime.
+  /**
+   * @brief Plays a repeating reminder ping for starred mines.
+   */
   function playNag() {
     beep(520, 90, 0, 0.2);
     beep(520, 90, 140, 0.2);
   }
 
+  /**
+   * @brief Unlocks audio playback after a user gesture.
+   */
   function unlock() {
     ensureCtx();
   }

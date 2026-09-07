@@ -1,7 +1,11 @@
 window.XpCalc = (function () {
+  'use strict';
 
-  // Total XP orbs/points needed to go from level 0 to level n
-  // (Minecraft XP ladder formula).
+  /**
+   * @brief Computes the total XP needed to reach a level.
+   * @param n The target level.
+   * @return The total XP orbs or points required.
+   */
   function totalXpForLevel(n) {
     n = Math.max(0, Math.floor(Number(n) || 0));
 
@@ -16,7 +20,11 @@ window.XpCalc = (function () {
     return Math.round(4.5 * n * n - 162.5 * n + 2220);
   }
 
-  // XP cost to advance from level l to l+1.
+  /**
+   * @brief Computes the XP cost to advance one level.
+   * @param l The current level.
+   * @return The XP cost from level l to level l + 1.
+   */
   function costToNext(l) {
     l = Math.max(0, Math.floor(Number(l) || 0));
 
@@ -31,8 +39,11 @@ window.XpCalc = (function () {
     return 9 * l - 158;
   }
 
-  // Highest level whose total-XP requirement is at most xp.
-  // The ladder is strictly increasing, so a binary search inverts it exactly.
+  /**
+   * @brief Finds the highest level affordable with a given XP amount.
+   * @param xp The available XP orbs or points.
+   * @return The highest reachable level.
+   */
   function levelForXp(xp) {
     xp = Math.max(0, Math.floor(Number(xp) || 0));
 

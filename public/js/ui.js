@@ -1,4 +1,6 @@
 window.UI = (function () {
+  'use strict';
+
   const { fmtDuration, fmtClock, toMs } = window.TimeUtils;
   const Engine = window.TimerEngine;
   const Manual = window.ManualTimers;
@@ -8,6 +10,9 @@ window.UI = (function () {
   let els = {};
   let xpDriving = null;
 
+  /**
+   * @brief Caches all referenced DOM elements into the els map.
+   */
   function cacheEls() {
     els = {
       serverPanel: document.getElementById('serverPanel'),
@@ -54,13 +59,20 @@ window.UI = (function () {
     };
   }
 
+  /**
+   * @brief Escapes a string for safe insertion into innerHTML.
+   * @param str The raw string.
+   * @return The HTML-escaped string.
+   */
   function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
   }
 
-  // ---------- Sidebar ----------
+  /**
+   * @brief Renders the sidebar visibility switches for mines and presets.
+   */
   function renderSidebar() {
     const { mines } = Engine.getState();
     const { presets } = Manual.getState();
@@ -68,6 +80,12 @@ window.UI = (function () {
     const standard = mines.filter(m => !m.special);
     const special = mines.filter(m => m.special);
 
+    /**
+     * @brief Builds one sidebar check row for a mine or timer preset.
+     * @param item The mine or preset object.
+     * @param kind Either 'mine' or 'timer'.
+     * @return The row HTML.
+     */
     const chkHtml = (item, kind) => {
       const checked = kind === 'mine'
         ? Prefs.isMineVisible(item.id, item.visibleDefault)
@@ -97,6 +115,9 @@ window.UI = (function () {
     els.chkTimers.innerHTML = presets.map(p => chkHtml(p, 'timer')).join('');
   }
 
+  /**
+   * @brief Applies the sidebar open state to the drawer and backdrop.
+   */
   function applySidebarOpenState() {
     const open = Prefs.getSidebarOpen();
     els.sidebar.classList.toggle('open', open);
@@ -104,6 +125,9 @@ window.UI = (function () {
     document.body.classList.toggle('no-scroll', open);
   }
 
+  /**
+   * @brief Binds the sidebar drawer, backdrop and visibility-switch events.
+   */
   function bindSidebarEvents() {
     els.sidebarCloseBtn.addEventListener('click', () => {
       Prefs.setSidebarOpen(false);
@@ -137,7 +161,9 @@ window.UI = (function () {
     });
   }
 
-  // ---------- Calibration dropdown ----------
+  /**
+   * @brief Rebuilds the calibration dropdown from the visible mines.
+   */
   function renderCalibrationOptions() {
     const { mines } = Engine.getState();
 
@@ -154,6 +180,10 @@ window.UI = (function () {
       .join('');
   }
 
+  /**
+   * @brief Binds the star toggle for a mine grid.
+   * @param gridEl The grid element to listen on.
+   */
   function bindMineGridEvents(gridEl) {
     gridEl.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action]');
@@ -172,6 +202,10 @@ window.UI = (function () {
     });
   }
 
+  /**
+   * @brief Opens or closes the calibration modal.
+   * @param open Whether the modal should be open.
+   */
   function setCalModal(open) {
     els.calModal.classList.toggle('open', open);
     els.calBackdrop.classList.toggle('visible', open);
@@ -181,7 +215,10 @@ window.UI = (function () {
     }
   }
 
-  // ---------- XP Calculator ----------
+  /**
+   * @brief Opens or closes the XP calculator drawer.
+   * @param open Whether the drawer should be open.
+   */
   function setXpOpen(open) {
     els.xpPanel.classList.toggle('open', open);
     els.xpBackdrop.classList.toggle('visible', open);
@@ -195,10 +232,18 @@ window.UI = (function () {
     }
   }
 
+  /**
+   * @brief Formats a number with thousands separators.
+   * @param n The number to format.
+   * @return The formatted string.
+   */
   function fmtXp(n) {
     return Number(n).toLocaleString('en-US');
   }
 
+  /**
+   * @brief Recomputes and renders the XP calculator result panel.
+   */
   function renderXpResult() {
     const levelVal = els.xpLevelInput.value.trim();
     const pointsVal = els.xpPointsInput.value.trim();
@@ -240,6 +285,9 @@ window.UI = (function () {
       </div>`;
   }
 
+  /**
+   * @brief Binds the XP calculator open, close and input events.
+   */
   function bindXpEvents() {
     els.xpOpenBtn.addEventListener('click', () => setXpOpen(true));
     els.xpCloseBtn.addEventListener('click', () => setXpOpen(false));
@@ -274,6 +322,10 @@ window.UI = (function () {
     });
   }
 
+  /**
+   * @brief Binds all page-wide event listeners.
+   * @param cycleHours The server reset cycle in hours.
+   */
   function bindEvents(cycleHours) {
     document.addEventListener(
       'pointerdown',
@@ -366,6 +418,9 @@ window.UI = (function () {
     bindSidebarEvents();
   }
 
+  /**
+   * @brief Renders the server sync readout and sub-line.
+   */
   function renderServerPanel() {
     const { server } = Engine.getState();
 
@@ -390,6 +445,14 @@ window.UI = (function () {
     }
   }
 
+  /**
+   * @brief Builds the HTML rows for a list of mines.
+   * @param mines The mines to render.
+   * @param server The server state with focus and soon thresholds.
+   * @param now The current timestamp.
+   * @param flashed The set of mine ids that just rolled.
+   * @return The joined row HTML.
+   */
   function mineRows(mines, server, now, flashed) {
     const sorted = [...mines].sort((a, b) => {
       if (a.starred !== b.starred) {
@@ -471,6 +534,10 @@ window.UI = (function () {
     }).join('');
   }
 
+  /**
+   * @brief Renders the visible standard and special mine grids.
+   * @param flashed The set of mine ids that just rolled.
+   */
   function renderMines(flashed) {
     const { mines, server } = Engine.getState();
     const now = Date.now();
@@ -500,6 +567,9 @@ window.UI = (function () {
     }
   }
 
+  /**
+   * @brief Renders the manual timer preset buttons and running rows.
+   */
   function renderManualTimers() {
     const { presets, running } =
       Manual.getState();
@@ -596,6 +666,10 @@ window.UI = (function () {
         .join('');
   }
 
+  /**
+   * @brief Renders the whole board from the current state.
+   * @param tickInfo Optional result of the latest engine tick.
+   */
   function render(tickInfo) {
     renderServerPanel();
 
@@ -627,6 +701,10 @@ window.UI = (function () {
     }
   }
 
+  /**
+   * @brief Initializes the UI: caches elements, binds events, first render.
+   * @param cycleHours The server reset cycle in hours.
+   */
   function init(cycleHours) {
     cacheEls();
     applySidebarOpenState();

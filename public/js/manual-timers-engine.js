@@ -1,13 +1,16 @@
-// Manual timers: presets loaded from manual-timers.json, each of which can
-// be "started" on demand. Every start creates its own running instance so
-// the same preset can be fired more than once at a time if needed.
 window.ManualTimers = (function () {
+  'use strict';
+
   const { toMs } = window.TimeUtils;
 
   let presets = [];
   let running = [];
   let uidCounter = 1;
 
+  /**
+   * @brief Loads the timer presets from configuration.
+   * @param config The configuration containing a timers array.
+   */
   function init(config) {
     presets = (config.timers || []).map(t => ({
       id: t.id,
@@ -17,6 +20,10 @@ window.ManualTimers = (function () {
     }));
   }
 
+  /**
+   * @brief Starts a new running instance of a preset.
+   * @param presetId The id of the preset to start.
+   */
   function start(presetId) {
     const preset = presets.find(p => p.id === presetId);
     if (!preset) return;
@@ -31,13 +38,18 @@ window.ManualTimers = (function () {
     });
   }
 
+  /**
+   * @brief Removes a running timer instance.
+   * @param uid The unique id of the running timer.
+   */
   function dismiss(uid) {
     running = running.filter(r => r.uid !== uid);
   }
 
-  // Advance state to "now". Returns the timers that just finished this tick
-  // (for the sound), and marks them finished so the UI can show that state
-  // until the person dismisses the card.
+  /**
+   * @brief Advances timer state to the current time.
+   * @return The timers that just finished this tick.
+   */
   function tick() {
     const now = Date.now();
     const justFinished = [];
@@ -50,6 +62,10 @@ window.ManualTimers = (function () {
     return justFinished;
   }
 
+  /**
+   * @brief Returns the current timer state.
+   * @return An object with the presets and running instances.
+   */
   function getState() {
     return { presets, running };
   }

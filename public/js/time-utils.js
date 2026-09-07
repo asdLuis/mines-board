@@ -1,15 +1,29 @@
-// Small, dependency-free time helpers used by the engine and the UI.
 window.TimeUtils = (function () {
+  'use strict';
+
+  /**
+   * @brief Pads a number to at least two digits.
+   * @param n The value to pad.
+   * @return The zero-padded string.
+   */
   function pad(n) {
     return String(n).padStart(2, '0');
   }
 
-  // { hours, minutes, seconds } -> milliseconds
+  /**
+   * @brief Converts a time object to milliseconds.
+   * @param time Object with optional hours, minutes and seconds.
+   * @return The total duration in milliseconds.
+   */
   function toMs({ hours = 0, minutes = 0, seconds = 0 } = {}) {
     return ((hours * 3600) + (minutes * 60) + seconds) * 1000;
   }
 
-  // milliseconds -> "HH:MM:SS" (drops the hour segment under 1h)
+  /**
+   * @brief Formats milliseconds as a clock-style duration.
+   * @param ms The duration in milliseconds.
+   * @return Time string like "HH:MM:SS", dropping the hour segment under one hour.
+   */
   function fmtDuration(ms) {
     if (ms < 0) ms = 0;
     const total = Math.floor(ms / 1000);
@@ -19,12 +33,21 @@ window.TimeUtils = (function () {
     return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
   }
 
-  // epoch ms -> local clock time, e.g. "14:32:05"
+  /**
+   * @brief Formats an epoch timestamp as local clock time.
+   * @param ts The epoch milliseconds timestamp.
+   * @return Local time string like "14:32:05".
+   */
   function fmtClock(ts) {
     return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
-  // Positive modulo (JS % can return negative for negative inputs)
+  /**
+   * @brief Returns the positive modulo of two numbers.
+   * @param a The dividend.
+   * @param b The divisor.
+   * @return The positive remainder of a divided by b.
+   */
   function mod(a, b) {
     return ((a % b) + b) % b;
   }
