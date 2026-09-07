@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Shift Board — Mine Reset Tracker</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+  <div id="configNote"></div>
+
+  <div class="page">
+
+    <header class="page-header">
+      <h1>Shift Board</h1>
+      <p>Mine and manual timer tracker</p>
+    </header>
+
+    <section class="hero">
+      <div class="hero-label">Next up</div>
+
+      <div class="hero-row">
+        <div class="hero-name" id="nextUpName">
+          Nothing tracked yet
+        </div>
+
+        <div class="hero-count" id="nextUpCount">
+          —
+        </div>
+      </div>
+
+      <div class="hero-sub" id="nextUpSub">
+        Sync the server or start a manual timer to see it here.
+      </div>
+    </section>
+
+    <div class="layout" id="layout">
+
+      <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-head">
+          <span>Visible items</span>
+
+          <button
+            class="icon-btn"
+            id="sidebarCloseBtn"
+            title="Collapse sidebar"
+          >
+            ‹
+          </button>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Mines A–Z</div>
+          <div class="chk-list" id="chkStandard"></div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Special mines</div>
+          <div class="chk-list" id="chkSpecial"></div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Manual timers</div>
+          <div class="chk-list" id="chkTimers"></div>
+        </div>
+
+      </aside>
+
+      <button
+        class="icon-btn sidebar-open-btn hidden"
+        id="sidebarOpenBtn"
+        title="Show sidebar"
+      >
+        ☰ Visible items
+      </button>
+
+      <main class="main">
+
+        <div class="control-row">
+
+          <!-- Server reset -->
+          <section class="panel" id="serverPanel">
+
+            <div class="panel-head">
+              <h2>Server reset</h2>
+              <span id="sCycleLabel"></span>
+            </div>
+
+            <div class="readout idle" id="serverReadout">
+              Not synced
+            </div>
+
+            <div class="sub" id="serverSub"></div>
+
+            <div class="divider"></div>
+
+            <div class="mini-form">
+              <input
+                type="number"
+                id="sH"
+                min="0"
+                value="0"
+                aria-label="hours"
+              >
+
+              <input
+                type="number"
+                id="sM"
+                min="0"
+                max="59"
+                value="0"
+                aria-label="minutes"
+              >
+
+              <input
+                type="number"
+                id="sS"
+                min="0"
+                max="59"
+                value="0"
+                aria-label="seconds"
+              >
+
+              <button id="syncBtn">
+                Sync
+              </button>
+            </div>
+
+          </section>
+
+          <!-- Calibration -->
+          <section class="panel">
+
+            <div class="panel-head">
+              <h2>Fix a delay</h2>
+              <span>1 known mine fixes all</span>
+            </div>
+
+            <div class="mini-form">
+              <select id="calMine"></select>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="mini-form">
+
+              <input
+                type="number"
+                id="calH"
+                min="0"
+                value="0"
+                aria-label="hours"
+              >
+
+              <input
+                type="number"
+                id="calM"
+                min="0"
+                max="59"
+                value="0"
+                aria-label="minutes"
+              >
+
+              <input
+                type="number"
+                id="calS"
+                min="0"
+                max="59"
+                value="0"
+                aria-label="seconds"
+              >
+
+              <button id="calBtn">
+                Apply
+              </button>
+
+            </div>
+
+            <div class="sub" id="calNote"></div>
+
+          </section>
+
+          <!-- Manual timers: start panel only -->
+          <section class="panel">
+
+            <div class="panel-head">
+              <h2>Manual timers</h2>
+              <span>starts when pressed</span>
+            </div>
+
+            <div
+              class="preset-row"
+              id="presetGrid"
+            ></div>
+
+          </section>
+
+        </div>
+
+        <!-- Active timers (its own section, like Mines) -->
+        <section class="active-section">
+
+          <div class="section-head">
+            <h2>Active timers</h2>
+          </div>
+
+          <div
+            class="manual-list"
+            id="manualGrid"
+          ></div>
+
+        </section>
+
+        <!-- Mines -->
+        <section class="mines-section">
+
+          <div class="section-head">
+
+            <h2>Mines</h2>
+
+            <span class="legend">
+              <i class="dot dot-soon"></i>
+              under 30 min
+
+              <i class="dot dot-focus"></i>
+              under 10 min
+            </span>
+
+          </div>
+
+          <div
+            class="mines-list"
+            id="mineGrid"
+          ></div>
+
+        </section>
+
+        <!-- Add one-off mine -->
+        <details class="add-card">
+
+          <summary>
+            Add a one-off mine
+          </summary>
+
+          <div class="add-form">
+
+            <input
+              type="text"
+              id="mName"
+              placeholder="Name"
+            >
+
+            <span class="group-label">
+              interval
+            </span>
+
+            <input
+              type="number"
+              id="mIntH"
+              min="0"
+              value="0"
+              aria-label="hours"
+            >
+
+            <input
+              type="number"
+              id="mIntM"
+              min="0"
+              max="59"
+              value="30"
+              aria-label="minutes"
+            >
+
+            <input
+              type="number"
+              id="mIntS"
+              min="0"
+              max="59"
+              value="0"
+              aria-label="seconds"
+            >
+
+            <span class="group-label">
+              left now
+            </span>
+
+            <input
+              type="number"
+              id="mRemH"
+              min="0"
+              value="0"
+              aria-label="hours"
+            >
+
+            <input
+              type="number"
+              id="mRemM"
+              min="0"
+              max="59"
+              value="30"
+              aria-label="minutes"
+            >
+
+            <input
+              type="number"
+              id="mRemS"
+              min="0"
+              max="59"
+              value="0"
+              aria-label="seconds"
+            >
+
+            <button id="mAddBtn">
+              Add
+            </button>
+
+          </div>
+
+        </details>
+
+        <!-- Footer -->
+        <footer class="note">
+
+          Config lives in
+          <code>data/mines.json</code>
+          and
+          <code>data/manual-timers.json</code>
+          — reload after editing.
+
+          Use the sidebar to choose what's visible.
+
+          The star is a manual "don't forget" marker you toggle yourself; it starts
+          pinging once that mine drops under 10 minutes left, and stops when cleared
+          or the mine resets.
+
+          If the server drags, pick one mine you know the real time left
+          for under "Fix a delay" — it corrects every timer at once.
+
+          Tap anywhere once to allow sound.
+
+        </footer>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <script src="/js/time-utils.js"></script>
+  <script src="/js/audio.js"></script>
+  <script src="/js/prefs.js"></script>
+  <script src="/js/timer-engine.js"></script>
+  <script src="/js/manual-timers-engine.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/main.js"></script>
+
+</body>
+</html>
+

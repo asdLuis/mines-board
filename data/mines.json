@@ -1,0 +1,313 @@
+{
+  "serverResetHours": 12,
+  "postResetDelaySeconds": 180,
+  "soonReminderSeconds": 1800,
+  "focusReminderSeconds": 600,
+  "starNagThresholdSeconds": 600,
+  "mines": [
+    {
+      "id": "mina-a",
+      "name": "Mina A",
+      "interval": {
+        "hours": 0,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-b",
+      "name": "Mina B",
+      "interval": {
+        "hours": 0,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-c",
+      "name": "Mina C",
+      "interval": {
+        "hours": 0,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-d",
+      "name": "Mina D",
+      "interval": {
+        "hours": 0,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-e",
+      "name": "Mina E",
+      "interval": {
+        "hours": 1,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-f",
+      "name": "Mina F",
+      "interval": {
+        "hours": 1,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "visible": true
+    },
+    {
+      "id": "mina-g",
+      "name": "Mina G",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-h",
+      "name": "Mina H",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-i",
+      "name": "Mina I",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-j",
+      "name": "Mina J",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-k",
+      "name": "Mina K",
+      "interval": {
+        "hours": 1,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "visible": true
+    },
+    {
+      "id": "mina-l",
+      "name": "Mina L",
+      "interval": {
+        "hours": 1,
+        "minutes": 43,
+        "seconds": 20
+      },
+      "visible": true
+    },
+    {
+      "id": "mina-m",
+      "name": "Mina M",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-n",
+      "name": "Mina N",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true
+    },
+    {
+      "id": "mina-o",
+      "name": "Mina O",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true
+    },
+    {
+      "id": "mina-p",
+      "name": "Mina P",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-q",
+      "name": "Mina Q",
+      "interval": {
+        "hours": 1,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-r",
+      "name": "Mina R",
+      "interval": {
+        "hours": 1,
+        "minutes": 30,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-s",
+      "name": "Mina S",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-t",
+      "name": "Mina T",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-u",
+      "name": "Mina U",
+      "interval": {
+        "hours": 1,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-v",
+      "name": "Mina V",
+      "interval": {
+        "hours": 1,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-w",
+      "name": "Mina W",
+      "interval": {
+        "hours": 1,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-x",
+      "name": "Mina X",
+      "interval": {
+        "hours": 1,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-y",
+      "name": "Mina Y",
+      "interval": {
+        "hours": 1,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-z",
+      "name": "Mina Z",
+      "interval": {
+        "hours": 1,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": false
+    },
+    {
+      "id": "mina-pvp",
+      "name": "Mina PVP",
+      "interval": {
+        "hours": 3,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true,
+      "special": true
+    },
+    {
+      "id": "mina-alcantarillas",
+      "name": "Alcantarillas",
+      "interval": {
+        "hours": 1,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true,
+      "special": true
+    },
+    {
+      "id": "mina-bosque",
+      "name": "Bosque",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true,
+      "special": true
+    },
+    {
+      "id": "mina-acuatica",
+      "name": "Acuatica",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true,
+      "special": true
+    }
+  ]
+}
