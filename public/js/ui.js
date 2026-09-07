@@ -3,8 +3,10 @@ window.UI = (function () {
   const Engine = window.TimerEngine;
   const Manual = window.ManualTimers;
   const Prefs = window.Prefs;
+  const XpCalc = window.XpCalc;
 
   let els = {};
+  let xpDriving = null;
 
   function cacheEls() {
     els = {
@@ -38,6 +40,14 @@ window.UI = (function () {
       calBackdrop: document.getElementById('calBackdrop'),
       calOpenBtn: document.getElementById('calOpenBtn'),
       calCloseBtn: document.getElementById('calCloseBtn'),
+
+      xpOpenBtn: document.getElementById('xpOpenBtn'),
+      xpCloseBtn: document.getElementById('xpCloseBtn'),
+      xpBackdrop: document.getElementById('xpBackdrop'),
+      xpPanel: document.getElementById('xpPanel'),
+      xpLevelInput: document.getElementById('xpLevelInput'),
+      xpPointsInput: document.getElementById('xpPointsInput'),
+      xpResult: document.getElementById('xpResult'),
 
       presetGrid: document.getElementById('presetGrid'),
       manualGrid: document.getElementById('manualGrid'),
@@ -187,6 +197,99 @@ window.UI = (function () {
     }
   }
 
+  // ---------- XP Calculator ----------
+  function setXpOpen(open) {
+    els.xpPanel.classList.toggle('open', open);
+    els.xpBackdrop.classList.toggle('visible', open);
+    document.body.classList.toggle(
+      'no-scroll',
+      open && !Prefs.getSidebarOpen()
+    );
+
+    if (open) {
+      els.xpLevelInput.focus();
+    }
+  }
+
+  function fmtXp(n) {
+    return Number(n).toLocaleString('en-US');
+  }
+
+  function renderXpResult() {
+    const levelVal = els.xpLevelInput.value.trim();
+    const pointsVal = els.xpPointsInput.value.trim();
+
+    if (xpDriving === 'level') {
+      if (levelVal === '') {
+        els.xpResult.innerHTML =
+          '<p class="xp-empty">Enter a target level — the XP total shows here.</p>';
+        return;
+      }
+
+      const level = Math.max(0, Math.floor(parseFloat(levelVal) || 0));
+      const total = XpCalc.totalXpForLevel(level);
+      const nextCost = XpCalc.costToNext(level);
+
+      els.xpResult.innerHTML = `
+        <div class="xp-rows">
+          <div class="xp-row"><span>Total XP to reach</span><b class="gold">${fmtXp(total)}</b></div>
+          <div class="xp-row"><span>Level ${level} &rarr; ${level + 1}</span><b>${fmtXp(nextCost)} XP</b></div>
+        </div>`;
+
+      return;
+    }
+
+    if (pointsVal === '') {
+      els.xpResult.innerHTML =
+        '<p class="xp-empty">Enter an XP amount — the level shows here.</p>';
+      return;
+    }
+
+    const points = Math.max(0, Math.floor(parseFloat(pointsVal) || 0));
+    const level = XpCalc.levelForXp(points);
+    const nextTotal = XpCalc.totalXpForLevel(level + 1);
+
+    els.xpResult.innerHTML = `
+      <div class="xp-rows">
+        <div class="xp-row"><span>${fmtXp(points)} XP reaches</span><b class="gold">Level ${level}</b></div>
+        <div class="xp-row"><span>Level ${level + 1} needs</span><b>${fmtXp(nextTotal)} XP</b></div>
+      </div>`;
+  }
+
+  function bindXpEvents() {
+    els.xpOpenBtn.addEventListener('click', () => setXpOpen(true));
+    els.xpCloseBtn.addEventListener('click', () => setXpOpen(false));
+    els.xpBackdrop.addEventListener('click', () => setXpOpen(false));
+
+    els.xpLevelInput.addEventListener('input', () => {
+      xpDriving = 'level';
+      const raw = els.xpLevelInput.value.trim();
+
+      if (raw === '') {
+        renderXpResult();
+        return;
+      }
+
+      const level = Math.max(0, Math.floor(parseFloat(raw) || 0));
+      els.xpPointsInput.value = XpCalc.totalXpForLevel(level);
+      renderXpResult();
+    });
+
+    els.xpPointsInput.addEventListener('input', () => {
+      xpDriving = 'points';
+      const raw = els.xpPointsInput.value.trim();
+
+      if (raw === '') {
+        renderXpResult();
+        return;
+      }
+
+      const points = Math.max(0, Math.floor(parseFloat(raw) || 0));
+      els.xpLevelInput.value = XpCalc.levelForXp(points);
+      renderXpResult();
+    });
+  }
+
   function bindEvents(cycleHours) {
     document.addEventListener(
       'pointerdown',
@@ -236,6 +339,20 @@ window.UI = (function () {
     els.calOpenBtn.addEventListener('click', () => setCalModal(true));
     els.calCloseBtn.addEventListener('click', () => setCalModal(false));
     els.calBackdrop.addEventListener('click', () => setCalModal(false));
+    bindXpEvents();
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+
+      if (els.xpPanel.classList.contains('open')) {
+        setXpOpen(false);
+      } else if (els.calModal.classList.contains('open')) {
+        setCalModal(false);
+      } else if (Prefs.getSidebarOpen()) {
+        Prefs.setSidebarOpen(false);
+        applySidebarOpenState();
+      }
+    });
 
     els.mAddBtn.addEventListener('click', () => {
       const name =

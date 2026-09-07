@@ -21,6 +21,16 @@
     <header class="page-header">
       <h1>Shift Board</h1>
       <p>Mine and manual timer tracker</p>
+
+      <div class="page-header-actions">
+        <button
+          class="icon-btn xp-open-btn"
+          id="xpOpenBtn"
+          title="Open XP calculator"
+        >
+          XP Calculator
+        </button>
+      </div>
     </header>
 
     <div class="layout" id="layout">
@@ -339,6 +349,66 @@
 
     </aside>
 
+    <!-- XP calculator drawer -->
+    <div class="xp-backdrop" id="xpBackdrop"></div>
+
+    <aside
+      class="xp-panel"
+      id="xpPanel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="xpTitle"
+    >
+
+      <div class="xp-head">
+        <h2 id="xpTitle">XP Calculator</h2>
+        <button class="icon-btn" id="xpCloseBtn" title="Close">×</button>
+      </div>
+
+      <div class="xp-body">
+
+        <label class="xp-field">
+          <span class="xp-field-label">Target level</span>
+          <input
+            type="number"
+            id="xpLevelInput"
+            min="0"
+            step="1"
+            inputmode="numeric"
+            placeholder="0"
+            autocomplete="off"
+          >
+        </label>
+
+        <p class="xp-mutual">edit either field — the other updates</p>
+
+        <label class="xp-field">
+          <span class="xp-field-label">XP orbs / points</span>
+          <input
+            type="number"
+            id="xpPointsInput"
+            min="0"
+            step="1"
+            inputmode="numeric"
+            placeholder="0"
+            autocomplete="off"
+          >
+        </label>
+
+        <div class="xp-result" id="xpResult">
+          <p class="xp-empty">
+            Enter a target level or an XP amount — each converts to the other.
+          </p>
+        </div>
+
+        <p class="xp-formula">
+          ladder · to level n: n²+6n / 2.5n²−40.5n+360 / 4.5n²−162.5n+2220
+        </p>
+
+      </div>
+
+    </aside>
+
   </div>
 
   <script src="/js/time-utils.js"></script>
@@ -346,6 +416,7 @@
   <script src="/js/prefs.js"></script>
   <script src="/js/timer-engine.js"></script>
   <script src="/js/manual-timers-engine.js"></script>
+  <script src="/js/xp-calc.js"></script>
   <script src="/js/ui.js"></script>
   <script src="/js/main.js"></script>
 
