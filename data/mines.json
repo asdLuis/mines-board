@@ -63,7 +63,7 @@
         "minutes": 30,
         "seconds": 0
       },
-      "visible": true
+      "visible": false
     },
     {
       "id": "mina-g",
@@ -270,6 +270,17 @@
       "name": "Mina PVP",
       "interval": {
         "hours": 3,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true,
+      "special": true
+    },
+    {
+      "id": "mina-patio",
+      "name": "Mina Patio",
+      "interval": {
+        "hours": 1,
         "minutes": 0,
         "seconds": 0
       },
