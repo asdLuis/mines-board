@@ -10,6 +10,9 @@ window.UI = (function () {
   let els = {};
   let xpDriving = null;
 
+  const RECENT_MS = 5 * 60000;
+  const QUICK_MAX_MS = 12 * 3600000;
+
   /**
    * @brief Caches all referenced DOM elements into the els map.
    */
@@ -48,6 +51,18 @@ window.UI = (function () {
 
       presetGrid: document.getElementById('presetGrid'),
       manualGrid: document.getElementById('manualGrid'),
+
+      pinDecBtn: document.getElementById('pinDecBtn'),
+      pinIncBtn: document.getElementById('pinIncBtn'),
+      pinValue: document.getElementById('pinValue'),
+
+      quickAddBtn: document.getElementById('quickAddBtn'),
+      quickTimerForm: document.getElementById('quickTimerForm'),
+      qName: document.getElementById('qName'),
+      qH: document.getElementById('qH'),
+      qM: document.getElementById('qM'),
+      qS: document.getElementById('qS'),
+      qStartBtn: document.getElementById('qStartBtn'),
 
       sidebar: document.getElementById('sidebar'),
       sidebarBackdrop: document.getElementById('sidebarBackdrop'),
@@ -113,6 +128,9 @@ window.UI = (function () {
     els.chkStandard.innerHTML = standard.map(m => chkHtml(m, 'mine')).join('');
     els.chkSpecial.innerHTML = special.map(m => chkHtml(m, 'mine')).join('');
     els.chkTimers.innerHTML = presets.map(p => chkHtml(p, 'timer')).join('');
+
+    els.pinValue.textContent =
+      `${Prefs.getResetPinMinutes()} min`;
   }
 
   /**
@@ -142,6 +160,18 @@ window.UI = (function () {
     els.sidebarBackdrop.addEventListener('click', () => {
       Prefs.setSidebarOpen(false);
       applySidebarOpenState();
+    });
+
+    els.pinDecBtn.addEventListener('click', () => {
+      Prefs.setResetPinMinutes(Prefs.getResetPinMinutes() - 1);
+      renderSidebar();
+      render();
+    });
+
+    els.pinIncBtn.addEventListener('click', () => {
+      Prefs.setResetPinMinutes(Prefs.getResetPinMinutes() + 1);
+      renderSidebar();
+      render();
     });
 
     document.getElementById('sidebar').addEventListener('change', (e) => {
@@ -323,6 +353,49 @@ window.UI = (function () {
   }
 
   /**
+   * @brief Clears the quick-add form and collapses it.
+   */
+  function resetQuickForm() {
+    els.qName.value = '';
+    els.qH.value = '';
+    els.qM.value = '';
+    els.qS.value = '';
+    els.quickTimerForm.classList.add('hidden');
+  }
+
+  /**
+   * @brief Binds the quick-add session manual timer controls.
+   */
+  function bindQuickTimerEvents() {
+    els.quickAddBtn.addEventListener('click', () => {
+      els.quickTimerForm.classList.toggle('hidden');
+
+      if (!els.quickTimerForm.classList.contains('hidden')) {
+        els.qName.focus();
+      }
+    });
+
+    els.qStartBtn.addEventListener('click', () => {
+      const ms = toMs({
+        hours: parseInt(els.qH.value) || 0,
+        minutes: parseInt(els.qM.value) || 0,
+        seconds: parseInt(els.qS.value) || 0
+      });
+
+      if (ms <= 0 || ms > QUICK_MAX_MS) {
+        return;
+      }
+
+      if (!Manual.startCustom(els.qName.value, ms)) {
+        return;
+      }
+
+      resetQuickForm();
+      render();
+    });
+  }
+
+  /**
    * @brief Binds all page-wide event listeners.
    * @param cycleHours The server reset cycle in hours.
    */
@@ -345,6 +418,9 @@ window.UI = (function () {
       }
 
       Engine.syncFromServerCountdown(ms);
+      els.sH.value = '';
+      els.sM.value = '';
+      els.sS.value = '';
       render();
     });
 
@@ -416,6 +492,7 @@ window.UI = (function () {
     });
 
     bindSidebarEvents();
+    bindQuickTimerEvents();
   }
 
   /**
@@ -451,10 +528,23 @@ window.UI = (function () {
    * @param server The server state with focus and soon thresholds.
    * @param now The current timestamp.
    * @param flashed The set of mine ids that just rolled.
+   * @param pinMs Keeps recently reset mines on top within this window.
    * @return The joined row HTML.
    */
-  function mineRows(mines, server, now, flashed) {
+  function mineRows(mines, server, now, flashed, pinMs) {
     const sorted = [...mines].sort((a, b) => {
+      const pinA =
+        a.lastResetAt != null &&
+        (now - a.lastResetAt) <= pinMs;
+
+      const pinB =
+        b.lastResetAt != null &&
+        (now - b.lastResetAt) <= pinMs;
+
+      if (pinA !== pinB) {
+        return pinA ? -1 : 1;
+      }
+
       if (a.starred !== b.starred) {
         return a.starred ? -1 : 1;
       }
@@ -469,6 +559,14 @@ window.UI = (function () {
 
       const remaining =
         mine.nextReset - now;
+
+      const age =
+        mine.lastResetAt != null
+          ? now - mine.lastResetAt
+          : Number.MAX_SAFE_INTEGER;
+
+      const recent =
+        age <= RECENT_MS;
 
       const focus =
         remaining > 0 &&
@@ -487,6 +585,11 @@ window.UI = (function () {
           ? `<div class="predict-count">${predictions.length} left before global reset</div>`
           : `<div class="predict-count muted">—</div>`;
 
+      const recentSub =
+        recent
+          ? `<span class="recent-sub">reset ${Math.max(1, Math.floor(age / 60000))}m ago</span>`
+          : '';
+
       return `
         <div class="mine-row ${
           flashed.has(mine.id)
@@ -502,6 +605,10 @@ window.UI = (function () {
           mine.starred
             ? 'starred'
             : ''
+        } ${
+          recent
+            ? 'recent'
+            : ''
         }">
 
           <button
@@ -516,7 +623,10 @@ window.UI = (function () {
           >★</button>
 
           <div class="name">
-            ${escapeHtml(mine.name)}
+            <span class="name-line">
+              ${escapeHtml(mine.name)}
+            </span>
+            ${recentSub}
           </div>
 
           <div class="interval">
@@ -541,6 +651,7 @@ window.UI = (function () {
   function renderMines(flashed) {
     const { mines, server } = Engine.getState();
     const now = Date.now();
+    const pinMs = Prefs.getResetPinMinutes() * 60000;
 
     const visible = mines.filter(m =>
       Prefs.isMineVisible(
@@ -556,14 +667,14 @@ window.UI = (function () {
       els.mineGrid.innerHTML =
         '<div class="empty">Nothing visible — pick some mines in the sidebar.</div>';
     } else {
-      els.mineGrid.innerHTML = mineRows(standard, server, now, flashed);
+      els.mineGrid.innerHTML = mineRows(standard, server, now, flashed, pinMs);
     }
 
     if (special.length === 0) {
       els.specialGrid.innerHTML =
         '<div class="empty">No special mines tracked.</div>';
     } else {
-      els.specialGrid.innerHTML = mineRows(special, server, now, flashed);
+      els.specialGrid.innerHTML = mineRows(special, server, now, flashed, pinMs);
     }
   }
 
@@ -607,6 +718,7 @@ window.UI = (function () {
 
     const visibleRunning =
       running.filter(r =>
+        r.presetId == null ||
         visibleIds.has(r.presetId)
       );
 

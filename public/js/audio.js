@@ -60,11 +60,11 @@ window.SoundFX = (function () {
   }
 
   /**
-   * @brief Plays a repeating reminder ping for starred mines.
+   * @brief Plays a sharp repeating alert for the ten-minute nag.
    */
   function playNag() {
-    beep(520, 90, 0, 0.2);
-    beep(520, 90, 140, 0.2);
+    beep(1568, 90, 0, 0.22);
+    beep(1568, 90, 130, 0.22);
   }
 
   /**

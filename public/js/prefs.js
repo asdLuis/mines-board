@@ -2,7 +2,7 @@ window.Prefs = (function () {
   'use strict';
 
   const KEY = 'shiftboard-prefs-v1';
-  let state = { mineVisible: {}, timerVisible: {}, sidebarOpen: true };
+  let state = { mineVisible: {}, timerVisible: {}, sidebarOpen: true, resetPinMinutes: 2 };
   let storageOk = true;
 
   /**
@@ -86,7 +86,27 @@ window.Prefs = (function () {
     save();
   }
 
+  /**
+   * @brief Reads the recently-reset pin duration in minutes.
+   * @return The pin duration in whole minutes, clamped between one and ten.
+   */
+  function getResetPinMinutes() {
+    const raw = state.resetPinMinutes;
+    if (!Number.isInteger(raw)) return 2;
+    return Math.min(10, Math.max(1, raw));
+  }
+
+  /**
+   * @brief Stores the recently-reset pin duration in minutes.
+   * @param val The new pin duration, clamped between one and ten.
+   */
+  function setResetPinMinutes(val) {
+    const next = Number.isInteger(val) ? val : 2;
+    state.resetPinMinutes = Math.min(10, Math.max(1, next));
+    save();
+  }
+
   load();
 
-  return { isMineVisible, setMineVisible, isTimerVisible, setTimerVisible, getSidebarOpen, setSidebarOpen };
+  return { isMineVisible, setMineVisible, isTimerVisible, setTimerVisible, getSidebarOpen, setSidebarOpen, getResetPinMinutes, setResetPinMinutes };
 })();

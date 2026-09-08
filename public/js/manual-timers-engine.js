@@ -6,6 +6,7 @@ window.ManualTimers = (function () {
   let presets = [];
   let running = [];
   let uidCounter = 1;
+  const MAX_CUSTOM_MS = 12 * 3600000;
 
   /**
    * @brief Loads the timer presets from configuration.
@@ -36,6 +37,32 @@ window.ManualTimers = (function () {
       finished: false,
       notified: false
     });
+  }
+
+  /**
+   * @brief Starts a session-only timer with a custom name and duration.
+   * @param name The timer name.
+   * @param durationMs The duration in milliseconds.
+   * @return True when the timer started, false when invalid.
+   */
+  function startCustom(name, durationMs) {
+    if (!Number.isFinite(durationMs) || durationMs <= 0 || durationMs > MAX_CUSTOM_MS) {
+      return false;
+    }
+
+    const label = (name || '').trim() || 'Timer';
+
+    running.push({
+      uid: `run-${uidCounter++}`,
+      presetId: null,
+      name: label,
+      durationMs,
+      endsAt: Date.now() + durationMs,
+      finished: false,
+      notified: false
+    });
+
+    return true;
   }
 
   /**
@@ -70,5 +97,5 @@ window.ManualTimers = (function () {
     return { presets, running };
   }
 
-  return { init, start, dismiss, tick, getState };
+  return { init, start, startCustom, dismiss, tick, getState };
 })();

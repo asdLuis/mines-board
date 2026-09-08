@@ -66,7 +66,7 @@
               type="number"
               id="sH"
               min="0"
-              value="0"
+              placeholder="Hours"
               aria-label="hours"
             >
 
@@ -75,7 +75,7 @@
               id="sM"
               min="0"
               max="59"
-              value="0"
+              placeholder="Minutes"
               aria-label="minutes"
             >
 
@@ -84,7 +84,7 @@
               id="sS"
               min="0"
               max="59"
-              value="0"
+              placeholder="Seconds"
               aria-label="seconds"
             >
 
@@ -99,7 +99,64 @@
 
           <div class="section-head">
             <h2>Manual timers</h2>
-            <span class="sub">starts when pressed</span>
+
+            <span class="head-tools">
+              <span class="sub">starts when pressed</span>
+              <button
+                class="icon-btn"
+                id="quickAddBtn"
+                title="Add a session-only timer"
+                data-od-id="quick-add-button"
+              >
+                +
+              </button>
+            </span>
+          </div>
+
+          <div
+            class="mini-form quick-timer-form hidden"
+            id="quickTimerForm"
+            data-od-id="quick-timer-form"
+          >
+            <input
+              type="text"
+              id="qName"
+              placeholder="Timer name"
+              maxlength="30"
+              autocomplete="off"
+              aria-label="timer name"
+            >
+
+            <input
+              type="number"
+              id="qH"
+              min="0"
+              max="12"
+              placeholder="Hours"
+              aria-label="hours"
+            >
+
+            <input
+              type="number"
+              id="qM"
+              min="0"
+              max="59"
+              placeholder="Minutes"
+              aria-label="minutes"
+            >
+
+            <input
+              type="number"
+              id="qS"
+              min="0"
+              max="59"
+              placeholder="Seconds"
+              aria-label="seconds"
+            >
+
+            <button id="qStartBtn">
+              Start
+            </button>
           </div>
 
           <div
@@ -183,7 +240,7 @@
             type="number"
             id="calH"
             min="0"
-            value="0"
+            placeholder="Hours"
             aria-label="hours"
           >
 
@@ -192,7 +249,7 @@
             id="calM"
             min="0"
             max="59"
-            value="0"
+            placeholder="Minutes"
             aria-label="minutes"
           >
 
@@ -201,7 +258,7 @@
             id="calS"
             min="0"
             max="59"
-            value="0"
+            placeholder="Seconds"
             aria-label="seconds"
           >
 
@@ -243,6 +300,37 @@
       <div class="sidebar-section">
         <div class="sidebar-title">Manual timers</div>
         <div class="chk-list" id="chkTimers"></div>
+      </div>
+
+      <div
+        class="sidebar-section"
+        data-od-id="reset-pin-setting"
+      >
+        <div class="sidebar-title">Recently reset</div>
+
+        <div class="stepper">
+          <button
+            class="icon-btn"
+            id="pinDecBtn"
+            title="Pin recent rolls on top for fewer minutes"
+          >
+            −
+          </button>
+
+          <span class="stepper-value" id="pinValue"></span>
+
+          <button
+            class="icon-btn"
+            id="pinIncBtn"
+            title="Pin recent rolls on top for more minutes"
+          >
+            +
+          </button>
+        </div>
+
+        <div class="sub">
+          Time the recently reset mines persist at the top of the list
+        </div>
       </div>
 
     </aside>

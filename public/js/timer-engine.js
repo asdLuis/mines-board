@@ -65,6 +65,7 @@ window.TimerEngine = (function () {
         special: !!m.special,
         visibleDefault: m.visible !== false,
         starred: false,
+        lastResetAt: null,
         nextReset: Date.now() + intervalMs
       };
     }).filter(Boolean);
@@ -177,11 +178,13 @@ window.TimerEngine = (function () {
 
       if (!Number.isFinite(mine.nextReset)) {
         console.error(`Invalid nextReset detected for mine "${mine.name}".`);
+        mine.lastResetAt = now;
         mine.nextReset = now + mine.intervalMs;
         return;
       }
 
       if (mine.nextReset <= now) {
+        mine.lastResetAt = mine.nextReset;
         const intervalsPassed = Math.floor((now - mine.nextReset) / mine.intervalMs) + 1;
         mine.nextReset += intervalsPassed * mine.intervalMs;
         rolled = true;
@@ -202,6 +205,7 @@ window.TimerEngine = (function () {
       mines.forEach(mine => {
         if (!Number.isFinite(mine.intervalMs) || mine.intervalMs <= 0) return;
 
+        mine.lastResetAt = exactLastReset;
         mine.nextReset = exactLastReset + computeRemaining(0, mine.intervalMs, server.delayMs);
         mine.starred = false;
         flashed.add(mine.id);

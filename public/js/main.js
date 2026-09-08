@@ -1,8 +1,6 @@
 (function () {
   'use strict';
 
-  const NAG_INTERVAL_MS = 15000;
-
   /**
    * @brief Fetches and parses a JSON file from the Express API.
    * @param path The request path.
@@ -52,8 +50,6 @@
       mineConfig.serverResetHours || 12
     );
 
-    let nagTimer = 0;
-
     setInterval(() => {
       const mineTick = window.TimerEngine.tick();
       const manualFinished = window.ManualTimers.tick();
@@ -73,14 +69,7 @@
       });
 
       if (urgentStarred) {
-        if (nagTimer <= 0) {
-          window.SoundFX.playNag();
-          nagTimer = NAG_INTERVAL_MS;
-        } else {
-          nagTimer -= 1000;
-        }
-      } else {
-        nagTimer = 0;
+        window.SoundFX.playNag();
       }
     }, 1000);
   }
