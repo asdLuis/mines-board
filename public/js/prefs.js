@@ -2,7 +2,7 @@ window.Prefs = (function () {
   'use strict';
 
   const KEY = 'shiftboard-prefs-v1';
-  let state = { mineVisible: {}, timerVisible: {}, sidebarOpen: true, resetPinMinutes: 2 };
+  let state = { mineVisible: {}, timerVisible: {}, sidebarOpen: true, resetPinMinutes: 2, soundVolume: 1 };
   let storageOk = true;
 
   /**
@@ -106,7 +106,27 @@ window.Prefs = (function () {
     save();
   }
 
+  /**
+   * @brief Reads the saved master volume.
+   * @return The volume between 0 and 1.
+   */
+  function getSoundVolume() {
+    const raw = state.soundVolume;
+    if (typeof raw !== 'number') return 1;
+    return Math.min(1, Math.max(0, raw));
+  }
+
+  /**
+   * @brief Stores the master volume.
+   * @param val The volume between 0 and 1.
+   */
+  function setSoundVolume(val) {
+    const next = Number.isFinite(val) ? val : 1;
+    state.soundVolume = Math.min(1, Math.max(0, next));
+    save();
+  }
+
   load();
 
-  return { isMineVisible, setMineVisible, isTimerVisible, setTimerVisible, getSidebarOpen, setSidebarOpen, getResetPinMinutes, setResetPinMinutes };
+  return { isMineVisible, setMineVisible, isTimerVisible, setTimerVisible, getSidebarOpen, setSidebarOpen, getResetPinMinutes, setResetPinMinutes, getSoundVolume, setSoundVolume };
 })();

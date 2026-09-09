@@ -2,6 +2,11 @@
   'use strict';
 
   /**
+   * @brief Silences the nag when less than this much remains.
+   */
+  const NAG_CUTOFF_MS = 10000;
+
+  /**
    * @brief Fetches and parses a JSON file from the Express API.
    * @param path The request path.
    * @return The parsed JSON payload.
@@ -65,7 +70,8 @@
       const urgentStarred = mines.some(m => {
         if (!m.starred) return false;
         const remaining = m.nextReset - now;
-        return remaining > 0 && remaining <= server.nagMs;
+        return remaining > NAG_CUTOFF_MS &&
+          remaining <= server.nagMs;
       });
 
       if (urgentStarred) {

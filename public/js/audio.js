@@ -2,6 +2,7 @@ window.SoundFX = (function () {
   'use strict';
 
   let ctx = null;
+  let masterVolume = 1;
 
   /**
    * @brief Ensures the audio context exists and is running.
@@ -37,7 +38,7 @@ window.SoundFX = (function () {
     const start = c.currentTime + delayMs / 1000;
     const end = start + durationMs / 1000;
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(volume, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume * masterVolume), start + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, end);
 
     osc.start(start);
@@ -74,5 +75,21 @@ window.SoundFX = (function () {
     ensureCtx();
   }
 
-  return { unlock, playDone, playStar, playNag };
+  /**
+   * @brief Sets the master volume applied to every sound.
+   * @param val A value between 0 and 1.
+   */
+  function setVolume(val) {
+    masterVolume = Math.min(1, Math.max(0, val));
+  }
+
+  /**
+   * @brief Reads the current master volume.
+   * @return The master volume between 0 and 1.
+   */
+  function getVolume() {
+    return masterVolume;
+  }
+
+  return { unlock, playDone, playStar, playNag, setVolume, getVolume };
 })();

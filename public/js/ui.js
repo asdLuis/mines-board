@@ -11,7 +11,6 @@ window.UI = (function () {
   let xpDriving = null;
 
   const RECENT_MS = 5 * 60000;
-  const QUICK_MAX_MS = 12 * 3600000;
 
   /**
    * @brief Caches all referenced DOM elements into the els map.
@@ -56,13 +55,10 @@ window.UI = (function () {
       pinIncBtn: document.getElementById('pinIncBtn'),
       pinValue: document.getElementById('pinValue'),
 
-      quickAddBtn: document.getElementById('quickAddBtn'),
-      quickTimerForm: document.getElementById('quickTimerForm'),
-      qName: document.getElementById('qName'),
-      qH: document.getElementById('qH'),
-      qM: document.getElementById('qM'),
-      qS: document.getElementById('qS'),
-      qStartBtn: document.getElementById('qStartBtn'),
+      volumeBtn: document.getElementById('volumeBtn'),
+      volumeMenu: document.getElementById('volumeMenu'),
+      volumeRange: document.getElementById('volumeRange'),
+      volumeValue: document.getElementById('volumeValue'),
 
       sidebar: document.getElementById('sidebar'),
       sidebarBackdrop: document.getElementById('sidebarBackdrop'),
@@ -226,6 +222,15 @@ window.UI = (function () {
 
       if (btn.dataset.action === 'star') {
         Engine.toggleStar(id);
+
+        const mine = Engine
+          .getState()
+          .mines
+          .find(m => m.id === id);
+
+        if (mine && mine.starred) {
+          window.SoundFX.playStar();
+        }
       }
 
       render();
@@ -353,46 +358,51 @@ window.UI = (function () {
   }
 
   /**
-   * @brief Clears the quick-add form and collapses it.
+   * @brief Binds the volume button, popover menu and slider.
    */
-  function resetQuickForm() {
-    els.qName.value = '';
-    els.qH.value = '';
-    els.qM.value = '';
-    els.qS.value = '';
-    els.quickTimerForm.classList.add('hidden');
-  }
+  function bindVolumeEvents() {
+    /**
+     * @brief Applies the saved volume to the engine, slider and icon.
+     */
+    const applyVolume = () => {
+      const v = Prefs.getSoundVolume();
+      const pct = Math.round(v * 100);
+      window.SoundFX.setVolume(v);
+      els.volumeRange.value = String(pct);
+      els.volumeRange.style.setProperty('--fill', `${pct}%`);
+      els.volumeValue.textContent = `${pct}%`;
+      els.volumeBtn.classList.toggle('muted', v <= 0);
+    };
 
-  /**
-   * @brief Binds the quick-add session manual timer controls.
-   */
-  function bindQuickTimerEvents() {
-    els.quickAddBtn.addEventListener('click', () => {
-      els.quickTimerForm.classList.toggle('hidden');
+    /**
+     * @brief Reflects the popover open state on the trigger button.
+     * @param open Whether the popover should be open.
+     */
+    const setOpen = (open) => {
+      els.volumeMenu.classList.toggle('hidden', !open);
+      els.volumeBtn.setAttribute('aria-expanded', String(open));
+    };
 
-      if (!els.quickTimerForm.classList.contains('hidden')) {
-        els.qName.focus();
+    els.volumeBtn.addEventListener('click', () => {
+      setOpen(els.volumeMenu.classList.contains('hidden'));
+    });
+
+    els.volumeRange.addEventListener('input', () => {
+      Prefs.setSoundVolume(els.volumeRange.value / 100);
+      window.SoundFX.setVolume(Prefs.getSoundVolume());
+      applyVolume();
+    });
+
+    document.addEventListener('pointerdown', (e) => {
+      if (
+        !e.target.closest('#volumeMenu') &&
+        !e.target.closest('#volumeBtn')
+      ) {
+        setOpen(false);
       }
     });
 
-    els.qStartBtn.addEventListener('click', () => {
-      const ms = toMs({
-        hours: parseInt(els.qH.value) || 0,
-        minutes: parseInt(els.qM.value) || 0,
-        seconds: parseInt(els.qS.value) || 0
-      });
-
-      if (ms <= 0 || ms > QUICK_MAX_MS) {
-        return;
-      }
-
-      if (!Manual.startCustom(els.qName.value, ms)) {
-        return;
-      }
-
-      resetQuickForm();
-      render();
-    });
+    applyVolume();
   }
 
   /**
@@ -460,6 +470,8 @@ window.UI = (function () {
         setXpOpen(false);
       } else if (els.calModal.classList.contains('open')) {
         setCalModal(false);
+      } else if (!els.volumeMenu.classList.contains('hidden')) {
+        els.volumeMenu.classList.add('hidden');
       } else if (Prefs.getSidebarOpen()) {
         Prefs.setSidebarOpen(false);
         applySidebarOpenState();
@@ -492,7 +504,7 @@ window.UI = (function () {
     });
 
     bindSidebarEvents();
-    bindQuickTimerEvents();
+    bindVolumeEvents();
   }
 
   /**
