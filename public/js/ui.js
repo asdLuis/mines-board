@@ -11,6 +11,7 @@ window.UI = (function () {
   let xpDriving = null;
 
   const RECENT_MS = 5 * 60000;
+  const QUICK_MAX_MS = 12 * 3600000;
 
   /**
    * @brief Caches all referenced DOM elements into the els map.
@@ -50,6 +51,14 @@ window.UI = (function () {
 
       presetGrid: document.getElementById('presetGrid'),
       manualGrid: document.getElementById('manualGrid'),
+
+      quickAddBtn: document.getElementById('quickAddBtn'),
+      quickTimerForm: document.getElementById('quickTimerForm'),
+      qName: document.getElementById('qName'),
+      qH: document.getElementById('qH'),
+      qM: document.getElementById('qM'),
+      qS: document.getElementById('qS'),
+      qStartBtn: document.getElementById('qStartBtn'),
 
       pinDecBtn: document.getElementById('pinDecBtn'),
       pinIncBtn: document.getElementById('pinIncBtn'),
@@ -406,6 +415,53 @@ window.UI = (function () {
   }
 
   /**
+   * @brief Clears the quick-add form and collapses it.
+   */
+  function resetQuickForm() {
+    els.qName.value = '';
+    els.qH.value = '';
+    els.qM.value = '';
+    els.qS.value = '';
+    els.quickTimerForm.classList.add('hidden');
+    els.quickAddBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  /**
+   * @brief Binds the quick-add session manual timer controls.
+   */
+  function bindQuickTimerEvents() {
+    els.quickAddBtn.addEventListener('click', () => {
+      els.quickTimerForm.classList.toggle('hidden');
+
+      const open = !els.quickTimerForm.classList.contains('hidden');
+      els.quickAddBtn.setAttribute('aria-expanded', String(open));
+
+      if (open) {
+        els.qName.focus();
+      }
+    });
+
+    els.qStartBtn.addEventListener('click', () => {
+      const ms = toMs({
+        hours: parseInt(els.qH.value, 10) || 0,
+        minutes: parseInt(els.qM.value, 10) || 0,
+        seconds: parseInt(els.qS.value, 10) || 0
+      });
+
+      if (ms <= 0 || ms > QUICK_MAX_MS) {
+        return;
+      }
+
+      if (!Manual.startCustom(els.qName.value, ms)) {
+        return;
+      }
+
+      resetQuickForm();
+      render();
+    });
+  }
+
+  /**
    * @brief Binds all page-wide event listeners.
    * @param cycleHours The server reset cycle in hours.
    */
@@ -470,6 +526,8 @@ window.UI = (function () {
         setXpOpen(false);
       } else if (els.calModal.classList.contains('open')) {
         setCalModal(false);
+      } else if (!els.quickTimerForm.classList.contains('hidden')) {
+        resetQuickForm();
       } else if (!els.volumeMenu.classList.contains('hidden')) {
         els.volumeMenu.classList.add('hidden');
       } else if (Prefs.getSidebarOpen()) {
@@ -505,6 +563,7 @@ window.UI = (function () {
 
     bindSidebarEvents();
     bindVolumeEvents();
+    bindQuickTimerEvents();
   }
 
   /**
@@ -761,7 +820,7 @@ window.UI = (function () {
               r.finished ? 'done' : ''
             }${stateClass ? ' ' + stateClass : ''}">
 
-              <span>
+              <span class="name">
                 ${escapeHtml(r.name)}
               </span>
 

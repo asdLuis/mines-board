@@ -103,6 +103,16 @@
             <span class="head-tools">
               <span class="sub">starts when pressed</span>
 
+              <button
+                class="icon-btn"
+                id="quickAddBtn"
+                title="Add a session-only timer"
+                aria-expanded="false"
+                data-od-id="quick-add-button"
+              >
+                Add timer
+              </button>
+
               <span class="volume-wrap">
                 <button
                   class="icon-btn volume-btn"
@@ -174,6 +184,52 @@
                 </div>
               </span>
             </span>
+          </div>
+
+          <div
+            class="mini-form quick-timer-form hidden"
+            id="quickTimerForm"
+            data-od-id="quick-timer-form"
+          >
+            <input
+              type="text"
+              id="qName"
+              placeholder="Timer name"
+              maxlength="30"
+              autocomplete="off"
+              aria-label="timer name"
+            >
+
+            <input
+              type="number"
+              id="qH"
+              min="0"
+              max="12"
+              placeholder="Hours"
+              aria-label="hours"
+            >
+
+            <input
+              type="number"
+              id="qM"
+              min="0"
+              max="59"
+              placeholder="Minutes"
+              aria-label="minutes"
+            >
+
+            <input
+              type="number"
+              id="qS"
+              min="0"
+              max="59"
+              placeholder="Seconds"
+              aria-label="seconds"
+            >
+
+            <button id="qStartBtn">
+              Start
+            </button>
           </div>
 
           <div
