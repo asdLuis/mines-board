@@ -18,6 +18,7 @@ window.TimerEngine = (function () {
   let server = {
     cycleMs: toMs({ hours: DEFAULT_CYCLE_HOURS }),
     nextReset: null,
+    lastResetAt: null,
     active: false,
     delayMs: 0,
     soonMs: DEFAULT_SOON_MS,
@@ -116,6 +117,7 @@ window.TimerEngine = (function () {
     server.active = true;
 
     const elapsedSinceLastServerReset = mod(server.cycleMs - remainingMs, server.cycleMs);
+    server.lastResetAt = now - elapsedSinceLastServerReset;
 
     mines.forEach(mine => {
       if (!Number.isFinite(mine.intervalMs) || mine.intervalMs <= 0) {
@@ -155,6 +157,10 @@ window.TimerEngine = (function () {
 
     if (server.active && Number.isFinite(server.nextReset)) {
       server.nextReset += driftMs;
+    }
+
+    if (Number.isFinite(server.lastResetAt)) {
+      server.lastResetAt += driftMs;
     }
 
     return driftMs;
@@ -201,6 +207,7 @@ window.TimerEngine = (function () {
     if (server.active && Number.isFinite(server.nextReset) && server.nextReset <= now) {
       const serverIntervalsPassed = Math.floor((now - server.nextReset) / server.cycleMs) + 1;
       const exactLastReset = server.nextReset + ((serverIntervalsPassed - 1) * server.cycleMs);
+      server.lastResetAt = exactLastReset;
 
       mines.forEach(mine => {
         if (!Number.isFinite(mine.intervalMs) || mine.intervalMs <= 0) return;
@@ -246,6 +253,36 @@ window.TimerEngine = (function () {
   }
 
   /**
+   * @brief Restores the server schedule from a persisted reset anchor.
+   * @param anchorMs The absolute epoch of a previous server reset.
+   */
+  function restoreServerFromAnchor(anchorMs) {
+    if (!Number.isFinite(anchorMs) || anchorMs <= 0) {
+      console.error('Invalid server anchor:', anchorMs);
+      return;
+    }
+
+    if (!Number.isFinite(server.cycleMs) || server.cycleMs <= 0) {
+      console.error('Invalid server cycle:', server.cycleMs);
+      return;
+    }
+
+    const now = Date.now();
+    server.lastResetAt = anchorMs;
+    server.active = true;
+
+    const intervalsPassed = Math.max(0, Math.floor((now - anchorMs) / server.cycleMs)) + 1;
+    server.nextReset = anchorMs + (intervalsPassed * server.cycleMs);
+
+    const elapsedSinceLastServerReset = mod(now - anchorMs, server.cycleMs);
+
+    mines.forEach(mine => {
+      if (!Number.isFinite(mine.intervalMs) || mine.intervalMs <= 0) return;
+      mine.nextReset = now + computeRemaining(elapsedSinceLastServerReset, mine.intervalMs, server.delayMs);
+    });
+  }
+
+  /**
    * @brief Returns the current timer state.
    * @return An object with the mines and server state.
    */
@@ -259,6 +296,7 @@ window.TimerEngine = (function () {
     toggleStar,
     syncFromServerCountdown,
     calibrateFromMine,
+    restoreServerFromAnchor,
     tick,
     predictedResets,
     getState

@@ -64,6 +64,10 @@ window.UI = (function () {
       pinIncBtn: document.getElementById('pinIncBtn'),
       pinValue: document.getElementById('pinValue'),
 
+      remDecBtn: document.getElementById('remDecBtn'),
+      remIncBtn: document.getElementById('remIncBtn'),
+      remValue: document.getElementById('remValue'),
+
       volumeBtn: document.getElementById('volumeBtn'),
       volumeMenu: document.getElementById('volumeMenu'),
       volumeRange: document.getElementById('volumeRange'),
@@ -136,6 +140,9 @@ window.UI = (function () {
 
     els.pinValue.textContent =
       `${Prefs.getResetPinMinutes()} min`;
+
+    els.remValue.textContent =
+      `${Prefs.getReminderMinutes()} min`;
   }
 
   /**
@@ -177,6 +184,16 @@ window.UI = (function () {
       Prefs.setResetPinMinutes(Prefs.getResetPinMinutes() + 1);
       renderSidebar();
       render();
+    });
+
+    els.remDecBtn.addEventListener('click', () => {
+      Prefs.setReminderMinutes(Prefs.getReminderMinutes() - 1);
+      renderSidebar();
+    });
+
+    els.remIncBtn.addEventListener('click', () => {
+      Prefs.setReminderMinutes(Prefs.getReminderMinutes() + 1);
+      renderSidebar();
     });
 
     document.getElementById('sidebar').addEventListener('change', (e) => {
@@ -462,14 +479,27 @@ window.UI = (function () {
   }
 
   /**
+   * @brief Snapshots the active server anchor so a reload restores it.
+   */
+  function persistServerAnchor() {
+    const { server } = Engine.getState();
+
+    if (!server.active || !Number.isFinite(server.lastResetAt)) return;
+
+    Prefs.setServerAnchor({
+      anchorMs: server.lastResetAt,
+      cycleMs: server.cycleMs,
+      delayMs: server.delayMs
+    });
+  }
+
+  /**
    * @brief Binds all page-wide event listeners.
    * @param cycleHours The server reset cycle in hours.
    */
   function bindEvents(cycleHours) {
-    document.addEventListener(
-      'pointerdown',
-      window.SoundFX.unlock,
-      { once: true }
+    ['pointerdown', 'mousedown', 'keydown', 'touchstart'].forEach((type) =>
+      document.addEventListener(type, window.SoundFX.unlock)
     );
 
     els.syncBtn.addEventListener('click', () => {
@@ -487,6 +517,7 @@ window.UI = (function () {
       els.sH.value = '';
       els.sM.value = '';
       els.sS.value = '';
+      persistServerAnchor();
       render();
     });
 
@@ -511,6 +542,7 @@ window.UI = (function () {
       els.calNote.textContent =
         `Applied: shifted everything ${sign}${fmtDuration(Math.abs(drift))}`;
 
+      persistServerAnchor();
       render();
     });
 

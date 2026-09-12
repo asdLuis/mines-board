@@ -2,19 +2,50 @@ window.SoundFX = (function () {
   'use strict';
 
   let ctx = null;
+  let master = null;
   let masterVolume = 1;
 
   /**
-   * @brief Ensures the audio context exists and is running.
-   * @return The audio context, or null when unsupported.
+   * @brief Resolves the best audio context constructor available.
+   * @return The constructor, or null when unsupported.
+   */
+  function pickCtx() {
+    return window.AudioContext || window.webkitAudioContext || null;
+  }
+
+  /**
+   * @brief Ensures the audio context and master gain lane exist and beeps
+   *        can be scheduled on a running context.
+   * @return The audio context, or null when unsupported or unavailable.
    */
   function ensureCtx() {
+    const Ctx = pickCtx();
+
+    if (!Ctx) return null;
+
     if (!ctx) {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return null;
-      ctx = new Ctx();
+      try {
+        ctx = new Ctx();
+      } catch (err) {
+        console.error('Could not create the audio context:', err);
+        return null;
+      }
     }
-    if (ctx.state === 'suspended') ctx.resume();
+
+    if (!master) {
+      master = ctx.createGain();
+      master.gain.value = masterVolume;
+      master.connect(ctx.destination);
+    }
+
+    if (ctx.state !== 'running' && typeof ctx.resume === 'function') {
+      const pending = ctx.resume();
+
+      if (pending && typeof pending.catch === 'function') {
+        pending.catch(() => {});
+      }
+    }
+
     return ctx;
   }
 
@@ -27,13 +58,15 @@ window.SoundFX = (function () {
    */
   function beep(freq, durationMs, delayMs, volume) {
     const c = ensureCtx();
-    if (!c) return;
+
+    if (!c || c.state !== 'running' || !master) return;
+
     const osc = c.createOscillator();
     const gain = c.createGain();
     osc.type = 'sine';
     osc.frequency.value = freq;
     osc.connect(gain);
-    gain.connect(c.destination);
+    gain.connect(master);
 
     const start = c.currentTime + delayMs / 1000;
     const end = start + durationMs / 1000;
@@ -69,7 +102,8 @@ window.SoundFX = (function () {
   }
 
   /**
-   * @brief Unlocks audio playback after a user gesture.
+   * @brief Unlocks audio playback after a user gesture, resuming the
+   *        context whenever the browser holds it suspended or interrupted.
    */
   function unlock() {
     ensureCtx();
@@ -81,6 +115,10 @@ window.SoundFX = (function () {
    */
   function setVolume(val) {
     masterVolume = Math.min(1, Math.max(0, val));
+
+    if (master && ctx) {
+      master.gain.setValueAtTime(masterVolume, ctx.currentTime);
+    }
   }
 
   /**

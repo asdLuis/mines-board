@@ -51,6 +51,17 @@
     window.TimerEngine.init(mineConfig);
     window.ManualTimers.init(manualConfig);
 
+    const anchor = window.Prefs.getServerAnchor();
+
+    if (
+      anchor &&
+      anchor.cycleMs === window.TimerEngine.getState().server.cycleMs
+    ) {
+      window.TimerEngine.restoreServerFromAnchor(anchor.anchorMs);
+    } else if (anchor) {
+      window.Prefs.clearServerAnchor();
+    }
+
     window.UI.init(
       mineConfig.serverResetHours || 12
     );
@@ -66,15 +77,25 @@
 
       const { mines, server } = window.TimerEngine.getState();
       const now = Date.now();
+      const nagMs = window.Prefs.getReminderMinutes() * 60000;
+
+      const hasStarred = mines.some(m => m.starred);
 
       const urgentStarred = mines.some(m => {
         if (!m.starred) return false;
         const remaining = m.nextReset - now;
         return remaining > NAG_CUTOFF_MS &&
-          remaining <= server.nagMs;
+          remaining <= nagMs;
       });
 
-      if (urgentStarred) {
+      const serverAlert =
+        hasStarred &&
+        server.active &&
+        Number.isFinite(server.nextReset) &&
+        (server.nextReset - now) > NAG_CUTOFF_MS &&
+        (server.nextReset - now) <= nagMs;
+
+      if (urgentStarred || serverAlert) {
         window.SoundFX.playNag();
       }
     }, 1000);
