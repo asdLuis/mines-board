@@ -288,6 +288,28 @@
       "special": true
     },
     {
+      "id": "mina-quimica",
+      "name": "Quimica",
+      "interval": {
+        "hours": 3,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true,
+      "special": true
+    },
+    {
+      "id": "mina-ceguera",
+      "name": "Ceguera",
+      "interval": {
+        "hours": 3,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true,
+      "special": true
+    },
+    {
       "id": "mina-alcantarillas",
       "name": "Alcantarillas",
       "interval": {

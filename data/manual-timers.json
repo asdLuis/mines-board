@@ -2,6 +2,10 @@
   "timers": [
     { "id": "Boss Battle Araña", "name": "Boss Battle Araña", "duration": { "hours": 1, "minutes": 0, "seconds": 0 }, "visible": true },
     { "id": "Boss Battle Ejercito", "name": "Boss Battle Ejercito", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true },
+    { "id": "Boss Battle Mineros", "name": "Boss Battle Mineros", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true },
+    { "id": "Boss Battle Minis", "name": "Boss Battle Mini Slimes", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true },
+    { "id": "Boss Battle Soldados", "name": "Boss Battle Soldados", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true },
+    { "id": "Boss Battle Capitanes", "name": "Boss Battle Capitanes", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true },
     { "id": "Boss Battle Bosque", "name": "Boss Battle Bosque", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true },
     { "id": "Boss Battle Ahogado", "name": "Boss Battle Ahogado", "duration": { "hours": 2, "minutes": 0, "seconds": 0 }, "visible": true }
   ]
