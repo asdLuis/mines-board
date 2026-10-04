@@ -341,6 +341,17 @@
       },
       "visible": true,
       "special": true
+    },
+    {
+      "id": "mina-infernal",
+      "name": "Infernal",
+      "interval": {
+        "hours": 2,
+        "minutes": 0,
+        "seconds": 0
+      },
+      "visible": true,
+      "special": true
     }
   ]
 }
